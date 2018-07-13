@@ -1,9 +1,6 @@
 package com.teamGroceryDesk.GroceryDesk;
 
-import javafx.scene.layout.*;
-
 import javax.swing.*;
-import javax.swing.border.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.sql.*;
@@ -13,7 +10,7 @@ public class LoginFrame extends JFrame implements ActionListener
 	/*----------------------------------- Declarations and Prerequisites----------------------------------- */
 
 	/* For JDBC */
-	String databaseURL="jdbc:mysql://localhost/?useSSL=true";
+	String databaseURL="jdbc:mysql://localhost/grocerydesk?useSSL=true";
 	String databaseID="root";
 	String databasePassword="";
 	Connection connection;
@@ -28,7 +25,6 @@ public class LoginFrame extends JFrame implements ActionListener
 	JTextField loginIDTextField;
 	JPasswordField loginPassTextField;
 	JButton loginButton;
-	JLabel storekeeperWelcomeLabel,adminWelcomeLabel;
 	JDialog loginErrorMessageDialog;
 	JLabel loginErrorMessageLabel;
 	JButton loginErrorMessageOKButton;
@@ -49,7 +45,8 @@ public class LoginFrame extends JFrame implements ActionListener
 		{
 			exception.printStackTrace();
 		}
-		/* JDialog definition */
+
+		/* JDialog definition and attributes */
 		loginErrorMessageDialog=new JDialog(this,"GroceryDesk- Login Error!");
 		loginErrorMessageDialog.setLocationRelativeTo(null);
 
@@ -61,7 +58,7 @@ public class LoginFrame extends JFrame implements ActionListener
 		loginButton=new JButton("Login");
 		loginErrorMessageLabel=new JLabel();
 		loginErrorMessageOKButton=new JButton("OK");
-		errorMessage=new String();
+		errorMessage= "";
 
 		/* Bounds for components */
 		loginIDLabel.setBounds(45,50,100,20);
@@ -112,6 +109,28 @@ public class LoginFrame extends JFrame implements ActionListener
 		this.add(loginPassTextField);
 		this.add(loginButton);
 
+		/*
+		try
+		{
+			UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+		} catch (ClassNotFoundException e)
+		{
+			e.printStackTrace();
+		} catch (InstantiationException e)
+		{
+			e.printStackTrace();
+		} catch (IllegalAccessException e)
+		{
+			e.printStackTrace();
+		} catch (UnsupportedLookAndFeelException e)
+		{
+			e.printStackTrace();
+		}
+
+		SwingUtilities.updateComponentTreeUI(this);
+
+		*/
+
 		/* Attributes of loginErrorMessageDialog */
 		loginErrorMessageDialog.setLayout(null);
 		loginErrorMessageDialog.setResizable(false);
@@ -145,15 +164,17 @@ public class LoginFrame extends JFrame implements ActionListener
 				statement=connection.createStatement();
 				statement.executeUpdate("USE grocerydesk;");
 				//BINARY in the below query makes for a case-sensitive string comparison
-				resultSet=statement.executeQuery("SELECT * FROM users WHERE BINARY id='"+loginID+"' AND password=sha2('"+loginPass+"',256);");
+				resultSet=statement.executeQuery("SELECT * FROM storekeeper WHERE BINARY id='"+loginID+"' AND password=sha2('"+loginPass+"',256);");
 
 				if(resultSet.next())
 				{
 					System.out.println("User Login Successful!!!!!");
 					this.dispose();
 					System.out.println(loginID);
+					connection.close();
+					statement.close();
 					StorekeeperFrame storekeeperFrame=new StorekeeperFrame();
-					storekeeperFrame.run(loginID);
+					storekeeperFrame.run(loginID,0);
 				}
 
 				else
@@ -163,10 +184,10 @@ public class LoginFrame extends JFrame implements ActionListener
 					{
 						System.out.println("Admin Login Successful!!!!!");
 						this.dispose();
-						//new StorekeeperFrame();
-						//adminFrame.setLocationRelativeTo(null);
-						//adminFrame.setSize(500,500);
-						//adminFrame.setVisible(true);
+						AdminFrame adminFrame=new AdminFrame();
+						connection.close();
+						statement.close();
+						adminFrame.run(loginID);
 					}
 					else
 					{
@@ -181,6 +202,7 @@ public class LoginFrame extends JFrame implements ActionListener
 			catch(Exception exception)
 			{
 				errorMessage="Sorry, an exception occurred. Try again later!";
+
 				/* Dialog Box dimensions have to be changed because of the change in error message to be displayed. */
 				loginErrorMessageDialog.setSize(352,200);
 				loginErrorMessageOKButton.setBounds(138, 80, 60, 40);
@@ -192,6 +214,8 @@ public class LoginFrame extends JFrame implements ActionListener
 		}
 		else if(sourceButton==loginErrorMessageOKButton)
 		{
+			this.dispose();
+			LoginFrame newFrame=new LoginFrame();
 			loginErrorMessageDialog.dispose();
 		}
 	}
