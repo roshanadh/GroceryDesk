@@ -28,7 +28,7 @@ public class AdminFrame
 
 	}
 
-	public void run(String loginID)
+	public void startSystem(String loginID)
 	{
 
 	}

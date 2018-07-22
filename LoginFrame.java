@@ -44,6 +44,7 @@ public class LoginFrame extends JFrame implements ActionListener
 		catch(Exception exception)
 		{
 			exception.printStackTrace();
+			JOptionPane.showMessageDialog(this,"Connection to database couldn't be established!","GroceryDesk- Error",JOptionPane.ERROR_MESSAGE);
 		}
 
 		/* JDialog definition and attributes */
@@ -67,7 +68,7 @@ public class LoginFrame extends JFrame implements ActionListener
 		loginPassTextField.setBounds(45,180,270,40);
 		loginButton.setBounds(130,250,100,50);
 		loginErrorMessageLabel.setBounds(48,0,400,100);
-		loginErrorMessageOKButton.setBounds(120, 80, 60, 40);
+		loginErrorMessageOKButton.setBounds(155, 80, 60, 40);
 
 		/* Attributes of Components */
 		loginIDLabel.setForeground(Color.WHITE);
@@ -87,9 +88,11 @@ public class LoginFrame extends JFrame implements ActionListener
 		loginButton.setBorderPainted(false);
 		loginButton.setFocusPainted(false);
 		loginButton.setOpaque(true);
+		//loginButton.setMargin(new Insets(0, 0, 0, 0));
+		//loginButton.setIcon(new ImageIcon("D:\\GroceryDeskProject\\icons\\loginButtonIcon.png"));
 
 		loginErrorMessageOKButton.setBorderPainted(false);
-		loginErrorMessageOKButton.setBackground(Color.white);
+		loginErrorMessageOKButton.setBackground(Color.WHITE);
 		loginErrorMessageOKButton.setFocusPainted(false);
 
 		/* Attributes of LoginFrame */
@@ -109,10 +112,14 @@ public class LoginFrame extends JFrame implements ActionListener
 		this.add(loginPassTextField);
 		this.add(loginButton);
 
-		/*
+		/* Setting default button */
+		this.getRootPane().setDefaultButton(loginButton); //Instead of writing KeyListener for Enter key
+
 		try
 		{
-			UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+			//UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
+			UIManager.setLookAndFeel(
+					UIManager.getCrossPlatformLookAndFeelClassName());
 		} catch (ClassNotFoundException e)
 		{
 			e.printStackTrace();
@@ -129,12 +136,11 @@ public class LoginFrame extends JFrame implements ActionListener
 
 		SwingUtilities.updateComponentTreeUI(this);
 
-		*/
 
 		/* Attributes of loginErrorMessageDialog */
 		loginErrorMessageDialog.setLayout(null);
-		loginErrorMessageDialog.setResizable(false);
-		loginErrorMessageDialog.setSize(300,180);
+		//loginErrorMessageDialog.setResizable(false);
+		loginErrorMessageDialog.setSize(365,180);
 
 		/* Other Attributes */
 		loginErrorMessageLabel.setText(errorMessage);
@@ -143,6 +149,9 @@ public class LoginFrame extends JFrame implements ActionListener
 		/* Components of loginErrorMessageDialog */
 		loginErrorMessageDialog.add(loginErrorMessageLabel);
 		loginErrorMessageDialog.add(loginErrorMessageOKButton);
+
+		/* Setting default button */
+		loginErrorMessageDialog.getRootPane().setDefaultButton(loginErrorMessageOKButton);
 
 		/* Adding Event Listeners */
 		loginButton.addActionListener(this);
@@ -163,18 +172,20 @@ public class LoginFrame extends JFrame implements ActionListener
 			{
 				statement=connection.createStatement();
 				statement.executeUpdate("USE grocerydesk;");
+
 				//BINARY in the below query makes for a case-sensitive string comparison
 				resultSet=statement.executeQuery("SELECT * FROM storekeeper WHERE BINARY id='"+loginID+"' AND password=sha2('"+loginPass+"',256);");
 
 				if(resultSet.next())
 				{
 					System.out.println("User Login Successful!!!!!");
-					this.dispose();
 					System.out.println(loginID);
-					connection.close();
+					resultSet.close();
 					statement.close();
+					connection.close();
+					this.dispose();
 					StorekeeperFrame storekeeperFrame=new StorekeeperFrame();
-					storekeeperFrame.run(loginID,0);
+					storekeeperFrame.startSystem(loginID,0);
 				}
 
 				else
@@ -185,16 +196,20 @@ public class LoginFrame extends JFrame implements ActionListener
 						System.out.println("Admin Login Successful!!!!!");
 						this.dispose();
 						AdminFrame adminFrame=new AdminFrame();
-						connection.close();
+						resultSet.close();
 						statement.close();
-						adminFrame.run(loginID);
+						connection.close();
+						adminFrame.startSystem(loginID);
 					}
 					else
 					{
 						errorMessage="Error: Login Credentials Mismatch!";
 						loginErrorMessageLabel.setText(errorMessage);
+						loginErrorMessageLabel.setIcon(new ImageIcon("D:\\GroceryDeskProject\\icons\\errorIcon.png"));
 						loginErrorMessageDialog.setVisible(true);
 						System.out.println("ERROR in LOGIN Process!");
+						//JOptionPane.showMessageDialog(this,"No such credentials found!","Login Error",JOptionPane.ERROR_MESSAGE);
+
 					}
 				}
 
@@ -216,7 +231,7 @@ public class LoginFrame extends JFrame implements ActionListener
 		{
 			this.dispose();
 			LoginFrame newFrame=new LoginFrame();
-			loginErrorMessageDialog.dispose();
+			loginErrorMessageDialog.setVisible(false);
 		}
 	}
 }
