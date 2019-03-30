@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="GroceryDeskProject:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/GroceryDeskProject_jar</output-path>
+    <root id="archive" name="GroceryDeskProject.jar">
+      <element id="module-output" name="GroceryDeskProject" />
+      <element id="extracted-dir" path="C:/mysql-connector-java-5.1.46/mysql-connector-java-5.1.46-bin.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
